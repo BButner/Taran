@@ -1,0 +1,4 @@
+/target
+*.psd
+.idea
+.DS_store
