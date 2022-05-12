@@ -1,47 +1,70 @@
-use std::any::Any;
+use std::process::Command;
 
-use crate::lib::{
-    config::MacroEntry,
-    directories::latest::{handle_command_newest_directory, handle_command_newest_file},
+use crate::lib::directories::latest::{
+    handle_command_newest_directory, handle_command_newest_file,
 };
 
-pub fn run_meta_command(entry: &MacroEntry) {
+use super::config::{
+    command_types::{Cmd, MacroCommand},
+    MacroType,
+};
+
+pub fn run_meta_command(entry: &MacroType) {
     let mut return_value: Option<String> = None;
 
-    if entry.commands.is_some() {
-        for command in entry.commands.clone().unwrap() {
-            if command.args.len() < 1 && return_value.is_none() {
-                eprintln!("Could not continue as no args were specified, and the previous function did not return a value...");
-            }
-
-            match command.fn_name.as_str() {
-                "get_newest_directory" => {
-                    if !expect_args(&return_value, &command.args) {
-                        eprintln!("No args found for {}", command.fn_name);
-
-                        return;
+    match entry {
+        MacroType::MacroTyping(_) => {
+            //TODO Handle MacroTyping
+        }
+        MacroType::Command(_) => {
+            //TODO Handle Command
+        }
+        MacroType::MetaCommand(cmd) => {
+            for command in &cmd.commands {
+                match command {
+                    MacroCommand::LatestDir(cmd) => {
+                        return_value = handle_command_newest_directory(&return_value, &cmd)
                     }
-
-                    return_value = handle_command_newest_directory(&return_value, &command);
-                }
-                "get_newest_file_in_dir" => {
-                    if !expect_args(&return_value, &command.args) {
-                        eprintln!("No args found for {}", command.fn_name);
-                        return;
+                    MacroCommand::LatestFile(cmd) => {
+                        return_value = handle_command_newest_file(&return_value, &cmd)
                     }
+                    MacroCommand::Cmd(cmd) => {
+                        return_value = handle_command_cmd(&return_value, &cmd)
+                    }
+                };
 
-                    return_value = handle_command_newest_file(&return_value, &command);
-                }
-                _ => {
-                    eprintln!("Could not find function {}", command.fn_name);
-                }
+                println!("{:?}", return_value);
             }
-
-            println!("{:?}", return_value);
         }
     }
+
+    println!("{:?}", return_value);
 }
 
-fn expect_args(return_value: &Option<String>, args: &Vec<String>) -> bool {
-    return_value.is_some() || args.len() > 0
+const ARG_DELIMITER: &str = "{arg}";
+
+fn handle_command_cmd(return_value: &Option<String>, cmd: &Cmd) -> Option<String> {
+    if !cmd.command.contains(ARG_DELIMITER) && !&cmd.args.contains(ARG_DELIMITER) {
+        panic!("Cmd {} does not contain {ARG_DELIMITER}!", cmd.key);
+    }
+
+    if return_value.is_none() {
+        panic!("Cmd {} did not get a value passed!", cmd.key);
+    }
+
+    let command_parsed = cmd.command.replace(ARG_DELIMITER, &return_value.clone().unwrap());
+    let args_parsed = cmd.args.replace(ARG_DELIMITER, &return_value.clone().unwrap());
+
+    let command = if cfg!(target_os = "windows") {
+        Command::new("cmd").args(["/C", &command_parsed, &args_parsed]).spawn()
+    } else {
+        Command::new(command_parsed).arg(args_parsed).spawn()
+    };
+
+    if command.is_err() {
+        println!("Error on attempting to launch {}...", cmd.key);
+        println!("Error: {}", command.err().unwrap());
+    }
+
+    None
 }

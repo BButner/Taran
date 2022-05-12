@@ -1,42 +1,35 @@
 use std::fs;
-use std::fs::DirEntry;
 use std::path::Path;
 
-use crate::lib::config::CommandEntry;
+use crate::lib::config::command_types::{CommandLatestDir, CommandLatestFile};
 
 pub fn handle_command_newest_directory(
     return_value: &Option<String>,
-    command: &CommandEntry,
+    command: &CommandLatestDir,
 ) -> Option<String> {
-    if return_value.is_some() {
+    if return_value.is_some() && command.implicit.is_none() {
         return get_newest_directory(&return_value.clone().unwrap());
     } else {
-        return get_newest_directory(&command.args[0]);
+        if command.path.is_some() {
+            return get_newest_directory(&command.path.clone().unwrap());
+        } else {
+            panic!("CommandLatestDir is set to non-implicit, but has no Path specified.");
+        }
     }
 }
 
 pub fn handle_command_newest_file(
     return_value: &Option<String>,
-    command: &CommandEntry,
+    command: &CommandLatestFile,
 ) -> Option<String> {
-    let mut arg: Option<String> = None;
-
-    /*
-    In this context, we're checking to see if return_value is populated.
-    If it is, then we assume that the arg[0] is the file extension to search
-    Else, we assume that arg[0] is the path, and arg[1] is the extension
-    */
-
-    if command.args.len() > 1 {
-        arg = Some(command.args[1].clone());
+    if return_value.is_some() && command.implicit.is_none() {
+        return get_newest_file_in_dir(&return_value.clone().unwrap(), &command.ext);
     } else {
-        arg = Some(command.args[0].clone());
-    }
-
-    if return_value.is_some() {
-        return get_newest_file_in_dir(&return_value.clone().unwrap(), arg);
-    } else {
-        return get_newest_file_in_dir(&command.args[0], arg);
+        if command.path.is_some() {
+            return get_newest_file_in_dir(&command.path.clone().unwrap(), &command.ext)
+        } else {
+            panic!("CommandLatestFile is set to non-implicit, but has no Path specified.");
+        }
     }
 }
 
@@ -47,6 +40,7 @@ fn get_newest_directory(path: &String) -> Option<String> {
 
     // Get all the sub-directories in the path argument
     let sub_dirs = fs::read_dir(path).unwrap();
+
     let latest_path = sub_dirs
         .into_iter()
         .filter(|dir| dir.as_ref().unwrap().file_type().unwrap().is_dir())
@@ -64,7 +58,7 @@ fn get_newest_directory(path: &String) -> Option<String> {
     None
 }
 
-fn get_newest_file_in_dir(path: &String, file_ext: Option<String>) -> Option<String> {
+fn get_newest_file_in_dir(path: &String, file_ext: &Option<String>) -> Option<String> {
     if !Path::new(path).exists() {
         eprintln!("Could not find path \"{}\"", path);
         return None;
@@ -115,33 +109,4 @@ fn get_newest_file_in_dir(path: &String, file_ext: Option<String>) -> Option<Str
     }
 
     None
-
-    //    if file_ext.is_some() {
-    //        return Option::from(
-    //            sub_files
-    //                .filter(|f| {
-    //                    let path = f.as_ref().unwrap().path();
-    //                    let ext = Path::new(path.to_str().unwrap()).extension();
-    //
-    //                    if ext.is_some() {
-    //                        let result = String::from(ext.unwrap().to_str().unwrap())
-    //                            == String::from(file_ext.as_ref().unwrap());
-    //                        println!("{}", result);
-    //                        return result;
-    //                    }
-    //
-    //                    false
-    //                })
-    //                .max_by_key(|f| f.as_ref().unwrap().metadata().unwrap().modified().unwrap())
-    //                .unwrap()
-    //                .unwrap(),
-    //        );
-    //    }
-    //
-    //    Option::from(
-    //        sub_files
-    //            .max_by_key(|f| f.as_ref().unwrap().metadata().unwrap().modified().unwrap())
-    //            .unwrap()
-    //            .unwrap(),
-    //    )
 }

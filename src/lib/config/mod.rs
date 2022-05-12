@@ -1,38 +1,28 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
+pub mod command_types;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct TaranConfig {
-    pub macros: Vec<MacroEntry>,
-}
-
-#[derive(Clone, Deserialize, Serialize, Debug)]
-pub struct MacroEntry {
-    pub key: String,
-    pub description: String,
-    pub macro_type: MacroType,
-    pub type_string: Option<String>,
-    pub commands: Option<Vec<CommandEntry>>
-}
-
-#[derive(Clone, Deserialize, Serialize, Debug)]
-pub struct CommandEntry {
-    pub fn_name: String,
-    pub delay: Option<i64>,
-    pub args: Vec<String>
+    pub macros: Vec<MacroType>,
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub enum MacroType {
-    Typing,
-    Function,
-    MetaFunction,
+    MacroTyping(MacroTyping),
+    Command(command_types::MacroCommand),
+    MetaCommand(command_types::MacroMetaCommand),
 }
 
 pub fn load_config() -> TaranConfig {
-    println!("{:?}", std::env::current_dir());
-
     let data = fs::read_to_string("./config.json").expect("Unable to read config...");
 
     serde_json::from_str(&data).unwrap()
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct MacroTyping {
+    pub key: String,
+    pub desc: String,
+    pub text: String,
 }

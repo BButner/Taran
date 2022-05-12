@@ -1,0 +1,23 @@
+{
+    "macros": [
+        {
+            "key": "test",
+            "description": "Attempt to rename the latest file in the latest directory",
+            "macro_type": "MetaFunction",
+            "commands": [
+                {
+                    "fn_name": "get_newest_directory",
+                    "args": ["/tmp/TaranTesting"]
+                },
+                {
+                    "fn_name": "get_newest_directory",
+                    "args": []
+                },
+                {
+                    "fn_name": "get_newest_file_in_dir",
+                    "args": ["txt"]
+                }
+            ]
+        }
+    ]
+}
