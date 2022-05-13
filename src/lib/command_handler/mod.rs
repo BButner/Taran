@@ -1,4 +1,5 @@
 use std::process::Command;
+pub mod typing_handler;
 
 use crate::lib::directories::latest::{
     handle_command_newest_directory, handle_command_newest_file,
@@ -9,12 +10,12 @@ use super::config::{
     MacroType,
 };
 
-pub fn run_meta_command(entry: &MacroType) {
+pub fn run_macro(entry: &MacroType) {
     let mut return_value: Option<String> = None;
 
     match entry {
-        MacroType::MacroTyping(_) => {
-            //TODO Handle MacroTyping
+        MacroType::Typing(cmd) => {
+            typing_handler::handle_typing_macro(&cmd);
         }
         MacroType::Command(_) => {
             //TODO Handle Command

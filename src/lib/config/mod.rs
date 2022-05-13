@@ -9,9 +9,19 @@ pub struct TaranConfig {
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub enum MacroType {
-    MacroTyping(MacroTyping),
+    Typing(Typing),
     Command(command_types::MacroCommand),
     MetaCommand(command_types::MacroMetaCommand),
+}
+
+impl MacroType {
+    pub fn key(&self) -> &String {
+        match self {
+            MacroType::Typing(val) => &val.key,
+            MacroType::Command(val) => val.key(),
+            MacroType::MetaCommand(val) => &val.key,
+        }
+    }
 }
 
 pub fn load_config() -> TaranConfig {
@@ -21,8 +31,8 @@ pub fn load_config() -> TaranConfig {
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
-pub struct MacroTyping {
+pub struct Typing {
     pub key: String,
-    pub desc: String,
+    pub desc: Option<String>,
     pub text: String,
 }

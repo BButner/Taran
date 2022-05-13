@@ -7,6 +7,16 @@ pub enum MacroCommand {
     Cmd(Cmd),
 }
 
+impl MacroCommand {
+    pub fn key(&self) -> &String {
+        match self {
+            MacroCommand::LatestDir(val) => &val.key,
+            MacroCommand::LatestFile(val) => &val.key,
+            MacroCommand::Cmd(val) => &val.key,
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct MacroMetaCommand {
     pub key: String,

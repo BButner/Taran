@@ -12,7 +12,7 @@
                 "taran"
             ],
             "cargoExtraArgs": [],
-            "executableArgs": []
+            "executableArgs": ["--raw", "testing"]
         },
         {
             "type": "cargo",
