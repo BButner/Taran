@@ -57,7 +57,7 @@ fn handle_command_cmd(return_value: &Option<String>, cmd: &Cmd) -> Option<String
     let args_parsed = cmd.args.replace(ARG_DELIMITER, &return_value.clone().unwrap());
 
     let command = if cfg!(target_os = "windows") {
-        Command::new("cmd").args(["/C", &command_parsed, &args_parsed]).spawn()
+        Command::new("powershell").args([&command_parsed, &args_parsed]).spawn()
     } else {
         Command::new(command_parsed).arg(args_parsed).spawn()
     };
