@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "cargo",
+            "name": "Run Taran",
+            "dependsOn": [],
+            "cargoArgs": [
+                "run",
+                "--package",
+                "taran",
+                "--bin",
+                "taran"
+            ],
+            "cargoExtraArgs": [],
+            "executableArgs": ["--raw", "testing"]
+        },
+        {
+            "type": "cargo",
+            "name": "Build Taran",
+            "dependsOn": [],
+            "cargoArgs": [
+                "build"
+            ],
+            "cargoExtraArgs": [],
+            "executableArgs": []
+        }
+    ]
+}

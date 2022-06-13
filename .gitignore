@@ -2,3 +2,4 @@
 *.psd
 .idea
 .DS_store
+config.json
