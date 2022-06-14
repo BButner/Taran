@@ -1,4 +1,4 @@
-use enigo::{Enigo, Key, KeyboardControllable};
+use tfc::{Context, Key, KeyboardContext, UnicodeKeyboardContext};
 use crate::lib::config::Typing;
 
 enum TypingMode {
@@ -13,27 +13,28 @@ pub fn handle_typing_macro(cmd: &Typing) {
 }
 
 pub fn type_macro(text: &String) {
-    simulate::type_str(&text);
-    // let mode: TypingMode = if cfg!(target_os = "windows") {
-    //     TypingMode::KeyDownUp
-    // } else {
-    //     TypingMode::KeySequence
-    // };
-    //
-    // let mut enigo = Enigo::new();
-    //
-    // match mode {
-    //     TypingMode::KeySequence => enigo.key_sequence(text),
-    //     TypingMode::KeyDownUp => {
-    //         for c in text.chars() {
-    //             if c.is_uppercase() { enigo.key_down(Key::Shift) }
-    //
-    //             let lowercase = c.to_lowercase().nth(0).unwrap();
-    //
-    //             enigo.key_down(Key::Layout(lowercase));
-    //             enigo.key_up(Key::Layout(lowercase));
-    //             if c.is_uppercase() { enigo.key_up(Key::Shift) }
-    //         }
-    //     }
-    // }
+    let mut context = Context::new();
+
+    if context.is_ok() {
+        let mut ctx = context.unwrap();
+
+        let chars = text.chars();
+        let mut index_to_skip: Option<usize> = None;
+
+        for (index, c) in chars.enumerate() {
+            if index_to_skip.is_some() && index == index_to_skip.unwrap() {
+                index_to_skip = None;
+                continue;
+            }
+
+            if c == '\\' && text.len() > (index + 1) {
+                if text.chars().nth(index + 1).unwrap() == 'n' {
+                    ctx.key_click(Key::ReturnOrEnter);
+                    index_to_skip = Some(index + 1);
+                    continue;
+                }
+            }
+            ctx.unicode_char(c);
+        }
+    }
 }
