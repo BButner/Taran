@@ -25,8 +25,13 @@ pub fn type_macro(text: &String) {
         TypingMode::KeySequence => enigo.key_sequence(text),
         TypingMode::KeyDownUp => {
             for c in text.chars() {
-                enigo.key_down(Key::Layout(c));
-                enigo.key_up(Key::Layout(c));
+                if c.is_uppercase() { enigo.key_down(Key::Shift) }
+
+                let lowercase = c.to_lowercase().nth(0).unwrap();
+
+                enigo.key_down(Key::Layout(lowercase));
+                enigo.key_up(Key::Layout(lowercase));
+                if c.is_uppercase() { enigo.key_up(Key::Shift) }
             }
         }
     }
